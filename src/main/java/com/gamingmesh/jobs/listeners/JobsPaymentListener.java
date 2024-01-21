@@ -441,6 +441,11 @@ public final class JobsPaymentListener implements Listener {
         if (Jobs.getGCManager().disablePaymentIfRiding && player.isInsideVehicle())
             return;
 
+        // Check if item is level 5 or higher in efficiency, if so, don't pay
+        if (player.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.DIG_SPEED) >= 5) {
+            return;
+        }
+
         // check if in creative
         if (!payIfCreative(player))
             return;
