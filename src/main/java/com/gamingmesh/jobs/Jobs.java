@@ -1071,6 +1071,10 @@ public final class Jobs extends JavaPlugin {
                         income = maxLimit;
                 }
             }
+            // If they have made over the limit of 24 hours, don't pay them
+            if (!jPlayer.isPaymentValid("NoJob", income)) {
+                income = 0D;
+            }
 
             // Calculate points
             if (pointAmount != 0D) {
@@ -1285,6 +1289,11 @@ public final class Jobs extends JavaPlugin {
                     CMIMessages.consoleMessage("&c[Jobs] Some issues with boss bar feature accured, try disabling it to avoid it.");
                 }
 
+                // If they have made over the limit of 24 hours, don't pay them
+                if (!jPlayer.isPaymentValid(prog.getJob().getJobFullName(), income)) {
+                    income = 0D;
+                }
+
                 Map<CurrencyType, Double> payments = new HashMap<>();
                 if (income != 0D)
                     payments.put(CurrencyType.MONEY, income);
@@ -1471,6 +1480,10 @@ public final class Jobs extends JavaPlugin {
 
         if (limited)
             return;
+
+        if (jPlayer.isPaymentValid(job.getJobFullName(), payment.get(CurrencyType.MONEY))) {
+            payment.set(CurrencyType.MONEY, 0D);
+        }
 
         economy.pay(jPlayer, payment.getPayment());
 

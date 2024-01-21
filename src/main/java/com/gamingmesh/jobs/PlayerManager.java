@@ -477,8 +477,10 @@ public class PlayerManager {
             return;
 
         // let the user join the job
-        if (!jPlayer.joinJob(job))
+        if (!jPlayer.joinJob(job)) {
+            jPlayer.getPlayer().sendMessage("You can't join this job, please wait 24 hours before joining again.");
             return;
+        }
 
         Jobs.getJobsDAO().joinJob(jPlayer, jPlayer.getJobProgression(job));
         jPlayer.setLeftTime(job);
@@ -521,8 +523,10 @@ public class PlayerManager {
         Jobs.getJobsDAO().recordToArchive(jPlayer, job);
 
         // let the user leave the job
-        if (!jPlayer.leaveJob(job))
+        if (!jPlayer.leaveJob(job)) {
+            jPlayer.getPlayer().sendMessage("You can't leave this job, please wait 24 hours before trying to leave.");
             return false;
+        }
 
         if (!Jobs.getJobsDAO().quitJob(jPlayer, job))
             return false;

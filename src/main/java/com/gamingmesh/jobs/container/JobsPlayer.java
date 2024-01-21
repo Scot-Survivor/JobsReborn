@@ -94,6 +94,10 @@ public class JobsPlayer {
     private int doneQuests = 0;
     private int skippedQuests = 0;
 
+    private int lastPaymentTimestamp = 0;
+    private HashMap<String, Integer> lastJobChangeTimestamp = new HashMap<>();
+    private HashMap<String, Double> amountOfMoneyMadeInLast24Hours = new HashMap<>();
+
     private final Map<UUID, Map<Job, Long>> leftTimes = new HashMap<>();
 
     private PlayerPoints pointsData = new PlayerPoints();
@@ -112,6 +116,48 @@ public class JobsPlayer {
 
     public JobsPlayer(String userName) {
         this.userName = userName == null ? "Unknown" : userName;
+    }
+
+    /**
+     * Gets the amount of money made in the last 24 hours
+     */
+    public double getAmountOfMoneyMadeInLast24Hours(String jobName) {
+        return amountOfMoneyMadeInLast24Hours.getOrDefault(jobName, 0D);
+    }
+
+    /**
+     * Gets the amount of money made in the last 24 hours
+     */
+    public double getAmountOfMoneyMadeInLast24Hours(Job job) {
+        return getAmountOfMoneyMadeInLast24Hours(job.getName());
+    }
+
+
+    /**
+     * Check if a payment is valid
+     */
+    public boolean isPaymentValid(String jobName, double amount) {
+        boolean val = Jobs.getGCManager().maximumMoneyPer24Hours == -1 || getAmountOfMoneyMadeInLast24Hours(jobName) + amount <= Jobs.getGCManager().maximumMoneyPer24Hours;
+        if (val){
+            this.addAmountOfMoneyMadeInLast24Hours(jobName, amount);
+            this.lastJobChangeTimestamp.put(jobName, (int) (System.currentTimeMillis() / 1000L));  // After first payment accept as job change.
+        }
+        return val;
+    }
+
+    /**
+     * Add money to the amount of money made in the last 24 hours
+     */
+    private void addAmountOfMoneyMadeInLast24Hours(String jobName, double amount) {
+        if (amount <= 0) return;
+        amount = getAmountOfMoneyMadeInLast24Hours(jobName) + amount;
+
+        if (lastPaymentTimestamp + 86400 > (int) (System.currentTimeMillis() / 1000L)) {
+            amountOfMoneyMadeInLast24Hours.put(jobName, amount);
+        } else {
+            amountOfMoneyMadeInLast24Hours.put(jobName, amount);
+        }
+        lastPaymentTimestamp = (int) (System.currentTimeMillis() / 1000L);
     }
 
     /**
@@ -648,12 +694,16 @@ public class JobsPlayer {
      */
     public boolean leaveJob(Job job) {
 //	synchronized (saveLock) {
-        if (progression.remove(getJobProgression(job))) {
-            reloadMaxExperience();
-            reloadLimits();
-            reloadHonorific();
-            Jobs.getPermissionHandler().recalculatePermissions(this);
-            return true;
+        if (amountOfMoneyMadeInLast24Hours.getOrDefault(job.getJobFullName(), 0D) == 0 ||
+                ((lastJobChangeTimestamp.getOrDefault(job.getJobFullName(), 0) + 86400) < (int) (System.currentTimeMillis() / 1000L) ||
+                        lastJobChangeTimestamp.getOrDefault(job.getJobFullName(), 0) == 0)) {
+            if (progression.remove(getJobProgression(job))) {
+                reloadMaxExperience();
+                reloadLimits();
+                reloadHonorific();
+                Jobs.getPermissionHandler().recalculatePermissions(this);
+                return true;
+            }
         }
         return false;
 //	}
@@ -665,6 +715,9 @@ public class JobsPlayer {
      */
     public boolean leaveAllJobs() {
 //	synchronized (saveLock) {
+        progression.removeIf(prog -> amountOfMoneyMadeInLast24Hours.getOrDefault(prog.getJob().getJobFullName(), 0D) == 0 ||
+                ((lastJobChangeTimestamp.getOrDefault(prog.getJob().getJobFullName(), 0) + 86400) < (int) (System.currentTimeMillis() / 1000L) ||
+                        lastJobChangeTimestamp.getOrDefault(prog.getJob().getJobFullName(), 0) == 0));
         progression.clear();
         reloadHonorific();
         Jobs.getPermissionHandler().recalculatePermissions(this);

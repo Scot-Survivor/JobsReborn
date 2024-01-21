@@ -45,7 +45,6 @@ import net.Zrips.CMILib.Equations.Parser;
 import net.Zrips.CMILib.FileHandler.ConfigReader;
 import net.Zrips.CMILib.Items.CMIItemStack;
 import net.Zrips.CMILib.Items.CMIMaterial;
-import net.Zrips.CMILib.Logs.CMIDebug;
 import net.Zrips.CMILib.Messages.CMIMessages;
 import net.Zrips.CMILib.Version.Version;
 
@@ -83,7 +82,8 @@ public class GeneralConfigManager {
         BrowseAmountToShow, JobsGUIRows, JobsGUIBackButton, JobsGUINextButton, JobsGUIStartPosition, JobsGUIGroupAmount, JobsGUISkipAmount;
 
     public double skipQuestCost, MinimumOveralPaymentLimit, minimumOveralExpLimit, MinimumOveralPointsLimit, MonsterDamagePercentage,
-        DynamicPaymentMaxPenalty, DynamicPaymentMaxBonus, TaxesAmount, TreeFellerMultiplier, gigaDrillMultiplier, superBreakerMultiplier;
+        DynamicPaymentMaxPenalty, DynamicPaymentMaxBonus, TaxesAmount, TreeFellerMultiplier, gigaDrillMultiplier, superBreakerMultiplier,
+        maximumMoneyPer24Hours;
 
     public float maxPaymentCurveFactor;
 
@@ -299,6 +299,10 @@ public class GeneralConfigManager {
         Jobs.getSignUtil().loadSigns();
         // Shop
         Jobs.getShopManager().load();
+    }
+
+    public double getMaxMoney() {
+        return maximumMoneyPer24Hours;
     }
 
     /**
@@ -1169,6 +1173,11 @@ public class GeneralConfigManager {
         c.addComment("BlockOwnership.TakeOver", "When enabled by interacting with furncae ownership will get transfered to new player",
             "If set to false then furnace will belong to player who interacted with it first until its ownership is removed");
         blockOwnershipTakeOver = c.get("BlockOwnership.TakeOver", false);
+
+
+        c.addComment("Addon.MaximumMoney", "Maximum amount of money they can earn per 24 hours " +
+                "(set to -1 for unlimited)");
+        maximumMoneyPer24Hours = c.get("Addon.MaximumMoney", -1);
 
         c.save();
     }
