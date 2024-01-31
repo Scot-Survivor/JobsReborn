@@ -60,6 +60,7 @@ public class GeneralConfigManager {
     private final Map<CurrencyType, CurrencyLimit> currencyLimitUse = new HashMap<>();
     private final Map<CurrencyType, Double> generalMulti = new HashMap<>();
     private final Map<String, List<String>> commandArgs = new HashMap<>();
+    private final Map<String, Double> maximumMoneyPer24Hours = new HashMap<>();
 
     protected Locale locale;
     private ConfigReader c;
@@ -82,8 +83,7 @@ public class GeneralConfigManager {
         BrowseAmountToShow, JobsGUIRows, JobsGUIBackButton, JobsGUINextButton, JobsGUIStartPosition, JobsGUIGroupAmount, JobsGUISkipAmount;
 
     public double skipQuestCost, MinimumOveralPaymentLimit, minimumOveralExpLimit, MinimumOveralPointsLimit, MonsterDamagePercentage,
-        DynamicPaymentMaxPenalty, DynamicPaymentMaxBonus, TaxesAmount, TreeFellerMultiplier, gigaDrillMultiplier, superBreakerMultiplier,
-        maximumMoneyPer24Hours;
+        DynamicPaymentMaxPenalty, DynamicPaymentMaxBonus, TaxesAmount, TreeFellerMultiplier, gigaDrillMultiplier, superBreakerMultiplier;
 
     public float maxPaymentCurveFactor;
 
@@ -301,8 +301,8 @@ public class GeneralConfigManager {
         Jobs.getShopManager().load();
     }
 
-    public double getMaxMoney() {
-        return maximumMoneyPer24Hours;
+    public double getMaxMoney(String jobName) {
+        return maximumMoneyPer24Hours.getOrDefault(jobName.toLowerCase(), -1.0);
     }
 
     /**
@@ -1175,9 +1175,21 @@ public class GeneralConfigManager {
         blockOwnershipTakeOver = c.get("BlockOwnership.TakeOver", false);
 
 
-        c.addComment("Addon.MaximumMoney", "Maximum amount of money they can earn per 24 hours " +
-                "(set to -1 for unlimited)");
-        maximumMoneyPer24Hours = c.get("Addon.MaximumMoney", -1);
+        c.addComment("Addon.MaximumMoney", "Maximum amount of money a job can earn per 24 hours " +
+                "(set to -1 for unlimited) Example: Digger,-1.0 will allow Digger to earn unlimited money per 24 hours");
+        // maximumMoneyPer24Hours = c.get("Addon.MaximumMoney", -1);
+        List<String> tList = c.get("Addon.MaximumMoney", Arrays.asList("Digger,-1.0"));
+        for (String one : tList) {
+            String[] split = one.split(",");
+            if (split.length != 2) {
+                continue;
+            }
+            try {
+                maximumMoneyPer24Hours.put(split[0].toLowerCase(), Double.parseDouble(split[1]));
+            } catch (NumberFormatException ignored) {
+            }
+
+        }
 
         c.save();
     }

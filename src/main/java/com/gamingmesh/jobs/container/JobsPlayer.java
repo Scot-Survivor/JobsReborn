@@ -137,7 +137,7 @@ public class JobsPlayer {
      * Check if a payment is valid
      */
     public boolean isPaymentValid(String jobName, double amount) {
-        boolean val = Jobs.getGCManager().maximumMoneyPer24Hours == -1 || getAmountOfMoneyMadeInLast24Hours(jobName) + amount <= Jobs.getGCManager().maximumMoneyPer24Hours;
+        boolean val = Jobs.getGCManager().getMaxMoney(jobName) == -1 || getAmountOfMoneyMadeInLast24Hours(jobName) + amount <= Jobs.getGCManager().getMaxMoney(jobName);
         if (val){
             this.addAmountOfMoneyMadeInLast24Hours(jobName, amount);
             this.lastJobChangeTimestamp.put(jobName, (int) (System.currentTimeMillis() / 1000L));  // After first payment accept as job change.
