@@ -442,7 +442,7 @@ public final class JobsPaymentListener implements Listener {
             return;
 
         // Check if item is level 5 or higher in efficiency, if so, don't pay
-        if (player.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.DIG_SPEED) >= 5) {
+        if (player.getInventory().getItemInMainHand().getEnchantmentLevel(Enchantment.DIG_SPEED) >= 6) {
             return;
         }
 

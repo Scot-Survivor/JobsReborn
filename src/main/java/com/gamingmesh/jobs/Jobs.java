@@ -1074,6 +1074,7 @@ public final class Jobs extends JavaPlugin {
             // If they have made over the limit of 24 hours, don't pay them
             if (!jPlayer.isPaymentValid("NoJob", income)) {
                 income = 0D;
+                jPlayer.getPlayer().sendMessage("You have reached the income limit for this job today.");
             }
 
             // Calculate points
@@ -1292,6 +1293,7 @@ public final class Jobs extends JavaPlugin {
                 // If they have made over the limit of 24 hours, don't pay them
                 if (!jPlayer.isPaymentValid(prog.getJob().getJobFullName(), income)) {
                     income = 0D;
+                    jPlayer.getPlayer().sendMessage("You have reached the income limit for this job today.");
                 }
 
                 Map<CurrencyType, Double> payments = new HashMap<>();
@@ -1483,6 +1485,7 @@ public final class Jobs extends JavaPlugin {
 
         if (jPlayer.isPaymentValid(job.getJobFullName(), payment.get(CurrencyType.MONEY))) {
             payment.set(CurrencyType.MONEY, 0D);
+            jPlayer.getPlayer().sendMessage("You have reached the income limit for this job today.");
         }
 
         economy.pay(jPlayer, payment.getPayment());
