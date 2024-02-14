@@ -97,6 +97,7 @@ public class JobsPlayer {
     private int lastPaymentTimestamp = 0;
     private HashMap<String, Integer> lastJobChangeTimestamp = new HashMap<>();
     private HashMap<String, Double> amountOfMoneyMadeInLast24Hours = new HashMap<>();
+    private HashMap<String, Boolean> messageSent = new HashMap<>();
 
     private final Map<UUID, Map<Job, Long>> leftTimes = new HashMap<>();
 
@@ -126,7 +127,7 @@ public class JobsPlayer {
     }
 
     /**
-     * Gets the amount of money made in the last 24 hours
+     * Gets the amount of money made in the last 24 hours@admin
      */
     public double getAmountOfMoneyMadeInLast24Hours(Job job) {
         return getAmountOfMoneyMadeInLast24Hours(job.getName());
@@ -138,9 +139,15 @@ public class JobsPlayer {
      */
     public boolean isPaymentValid(String jobName, double amount) {
         boolean val = Jobs.getGCManager().getMaxMoney(jobName) == -1 || getAmountOfMoneyMadeInLast24Hours(jobName) + amount <= Jobs.getGCManager().getMaxMoney(jobName);
+        boolean msgSent = messageSent.getOrDefault(jobName, false);
         if (val){
             this.addAmountOfMoneyMadeInLast24Hours(jobName, amount);
             this.lastJobChangeTimestamp.put(jobName, (int) (System.currentTimeMillis() / 1000L));  // After first payment accept as job change.
+            messageSent.put(jobName, false);
+        }
+        if (!val && !msgSent) {
+            messageSent.put(jobName, true);
+            getPlayer().sendMessage("You've hit the max money limit for this job (" + jobName +"). You will not be paid until the next 24 hours.");
         }
         return val;
     }
